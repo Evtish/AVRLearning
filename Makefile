@@ -1,3 +1,6 @@
+# you should add a hard link of this file to the directory you want to build
+# or find a smarter way to build each directory separately
+
 PROGRAM_NAME := main
 
 SRC_DIR := src
@@ -35,11 +38,11 @@ $(BUILD_DIR)/$(PROGRAM_NAME).hex: $(ELF_FILE)
 	avr-objcopy $(OBJCOPY_FLAGS) $^ $@
 
 # flash MCU
-.PHONY: flash
 flash: $(HEX_FILE)
 	avrdude $(AVRDUDE_FLAGS) -U flash:w:$<
 
 # remove build files
-.PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR) 
+	rm -rf $(BUILD_DIR)
+
+.PHONY: all flash clean

@@ -12,4 +12,5 @@ int main(void) {
         PORTB ^= LED_PIN;
         _delay_ms(LED_DELAY_MS);
     }
+    return 0;
 }
