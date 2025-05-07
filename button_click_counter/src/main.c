@@ -8,20 +8,21 @@
 #define LED_PIN PORTB1
 
 #define BTN_WAIT_MS 20
-#define BTN_DEBOUNCE_CHECK_AMOUNT 4
+#define BTN_DEBOUNCE_CHECK_PERIOD_MS 5
+#define BTN_DEBOUNCE_AMOUNT_TO_PASS (BTN_WAIT_MS / BTN_DEBOUNCE_CHECK_PERIOD_MS)
 
 #define TIMER_BITNESS 0b1000
 #define TIMER_SIZE (1 << TIMER_BITNESS)
 #define TIMER_PRESCALER_PWR_INDX 10
-#define TIMER_TICK_AMOUNT ((F_CPU >> TIMER_PRESCALER_PWR_INDX) * BTN_WAIT_MS / BTN_DEBOUNCE_CHECK_AMOUNT / 1000)
+#define TIMER_TICK_AMOUNT ((F_CPU >> TIMER_PRESCALER_PWR_INDX) * BTN_DEBOUNCE_CHECK_PERIOD_MS / 1000)
 
 #define PIND_IS_LOW(x) (PIND & (1 << (x)))
 #define TICK_DELTA(counter, val) ((counter) >= (val) ? (counter) - (val) : TIMER_SIZE + (counter) - (val))
 
-volatile bool btn_is_clicked = 0;
+volatile uint16_t btn_debounce_passed_amount = 0;
 
 int main(void) {
-    uint8_t btn_press_amount = 0, last_call_time = 0;
+    uint8_t last_call_time = 0;
     bool btn_is_pressed = false, btn_was_pressed = false;
 
     DDRB |= (1 << LED_PIN);
@@ -33,25 +34,22 @@ int main(void) {
         if (TICK_DELTA(TCNT0, last_call_time) >= TIMER_TICK_AMOUNT) {
             btn_is_pressed = !PIND_IS_LOW(BUTTON_PIN);
 
-            if (btn_is_pressed && !btn_was_pressed)
-                btn_press_amount = 1;
-            else if (btn_is_pressed && btn_was_pressed && btn_press_amount >= 1)
-                btn_press_amount++;
-            else
-                btn_press_amount = 0;
-
-            if (btn_press_amount >= BTN_DEBOUNCE_CHECK_AMOUNT) {
-                btn_is_clicked = true;
-                btn_press_amount = 0;
+            if (btn_is_pressed) {
+                if (!btn_was_pressed)
+                    btn_debounce_passed_amount = 1;
+                else if (btn_debounce_passed_amount >= 1)
+                    btn_debounce_passed_amount++;
             }
+            else
+                btn_debounce_passed_amount = 0;
 
             btn_was_pressed = btn_is_pressed;
             last_call_time = TCNT0;
         }
 
-        if (btn_is_clicked) {
+        if (btn_debounce_passed_amount >= BTN_DEBOUNCE_AMOUNT_TO_PASS) {
             PORTB ^= (1 << LED_PIN);
-            btn_is_clicked = false;
+            btn_debounce_passed_amount = 0;
         }
     }
     
