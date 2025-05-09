@@ -7,11 +7,11 @@
 #define BUTTON_PIN PORTD7
 #define LED_PIN PORTB1
 
-#define BTN_WAIT_MS 20
+#define BTN_WAIT_MS 2000
 #define BTN_DEBOUNCE_CHECK_PERIOD_MS 5
 #define BTN_DEBOUNCE_AMOUNT_TO_PASS (BTN_WAIT_MS / BTN_DEBOUNCE_CHECK_PERIOD_MS)
 
-#define TIMER_BITNESS 0b1000
+#define TIMER_BITNESS 8
 #define TIMER_SIZE (1 << TIMER_BITNESS)
 #define TIMER_PRESCALER_PWR_INDX 10
 #define TIMER_TICK_AMOUNT ((F_CPU >> TIMER_PRESCALER_PWR_INDX) * BTN_DEBOUNCE_CHECK_PERIOD_MS / 1000)
@@ -22,7 +22,7 @@
 volatile uint16_t btn_debounce_passed_amount = 0;
 
 int main(void) {
-    uint8_t last_call_time = 0;
+    uint8_t last_call_time = 0, btn_click_amount = 0;
     bool btn_is_pressed = false, btn_was_pressed = false;
 
     DDRB |= (1 << LED_PIN);
@@ -48,9 +48,15 @@ int main(void) {
         }
 
         if (btn_debounce_passed_amount >= BTN_DEBOUNCE_AMOUNT_TO_PASS) {
+            // btn_click_amount++;
             PORTB ^= (1 << LED_PIN);
             btn_debounce_passed_amount = 0;
         }
+
+        // if (btn_click_amount >= 3) {  // && time_sinse_last_click_ms <= 250
+        //     btn_click_amount = 0;
+        //     PORTB ^= (1 << LED_PIN);
+        // }
     }
     
     return 0;

@@ -4,15 +4,18 @@
 PROGRAM_NAME := main
 
 SRC_DIR := src
+INC_DIR := inc
 BUILD_DIR := build
 
 USB_PORT := /dev/ttyUSB0
 
-GCC_FLAGS := -mmcu=atmega328p -Wall -Os
+C_FLAGS := -DF_CPU=16000000UL -mmcu=atmega328p -Wall -Os -I ./$(INC_DIR)
 OBJCOPY_FLAGS := -R .eeprom -O ihex
 AVRDUDE_FLAGS := -c arduino -p m328p -P $(USB_PORT)
 
-OBJECT_FILES := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(wildcard $(SRC_DIR)/*.c))
+SOURCE_FILES := $(wildcard $(SRC_DIR)/*.c)
+OBJECT_FILES := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCE_FILES))
+DEPENDENCY_FILES := $(OBJECT_FILES:.o=.d)
 ELF_FILE := $(BUILD_DIR)/$(PROGRAM_NAME).elf
 HEX_FILE := $(BUILD_DIR)/$(PROGRAM_NAME).hex
 
@@ -25,13 +28,18 @@ $(BUILD_DIR):
 # check if build directory exists
 $(OBJECT_FILES): | $(BUILD_DIR)
 
+# $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
+# 	avr-gcc $(C_FLAGS) -MMD -MP $<
+
 # compile
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	avr-gcc -c $(GCC_FLAGS) $< -o $@
+	avr-gcc -c -MMD -MP $(C_FLAGS) $< -o $@
+
+-include $(DEPENDENCY_FILES)
 
 # linking
 $(ELF_FILE): $(OBJECT_FILES)
-	avr-gcc $^ $(GCC_FLAGS) -o $@
+	avr-gcc $^ $(C_FLAGS) -o $@
 
 # create .hex file from .elf
 $(BUILD_DIR)/$(PROGRAM_NAME).hex: $(ELF_FILE)
