@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/* update button state */
 void update(uint8_t btn_pin, volatile uint16_t* passed_debounce_amount_p) {
     static bool btn_was_pressed = false;
     bool btn_is_pressed = !PIND_IS_LOW(btn_pin);

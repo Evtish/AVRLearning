@@ -28,9 +28,6 @@ $(BUILD_DIR):
 # check if build directory exists
 $(OBJECT_FILES): | $(BUILD_DIR)
 
-# $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
-# 	avr-gcc $(C_FLAGS) -MMD -MP $<
-
 # compile
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	avr-gcc -c -MMD -MP $(C_FLAGS) $< -o $@

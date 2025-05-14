@@ -1,9 +1,7 @@
-#define F_CPU 16000000U
-
 #include <avr/io.h>
 #include <util/delay.h>
 
-#define LED_PIN _BV(PORTB5)
+#define LED_PIN _BV(PORTB1)
 #define LED_DELAY_MS 1000
 
 int main(void) {

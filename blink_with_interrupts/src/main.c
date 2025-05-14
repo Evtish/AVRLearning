@@ -1,5 +1,3 @@
-#define F_CPU 16000000U
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 

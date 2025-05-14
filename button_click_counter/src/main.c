@@ -1,5 +1,3 @@
-#define F_CPU 16000000UL
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
@@ -22,7 +20,7 @@
 volatile uint16_t btn_debounce_passed_amount = 0;
 
 int main(void) {
-    uint8_t last_call_time = 0, btn_click_amount = 0;
+    uint8_t last_call_time = 0;//, btn_click_amount = 0;
     bool btn_is_pressed = false, btn_was_pressed = false;
 
     DDRB |= (1 << LED_PIN);
