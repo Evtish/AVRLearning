@@ -1,41 +1,55 @@
+#include "defines.h"
+#include "inits.h"
+#include "button_controls.h"
+#include "utils.h"
+
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <stdbool.h>
 
-#define LED_PIN PORTB1
-
 int main(void) {
+    uint16_t adc_high_limit = ADC_HIGH_LIMIT_STEP * 2;
+
+    button left_button = {L_BUTTON_PIN, false, 0, 0};
+    button right_button = {R_BUTTON_PIN, false, 0, 0};
+
+    // bool l_btn_was_pressed = false, r_btn_was_pressed = false;
+    // uint8_t l_btn_last_call_time = 0, r_btn_last_call_time = 0;
+    // uint16_t l_btn_debounce_amount = 0, r_btn_debounce_amount = 0;
+
     /* -------------------- GPIO -------------------- */
-    DDRB |= (1 << LED_PIN);  // set led pin as output
+    init_LED_portb(LED_PIN);
+    
+    init_button_portd(L_BUTTON_PIN);
+    init_button_portd(R_BUTTON_PIN);
+
+    /* -------------------- button timer -------------------- */
+    init_timer0_counter();
 
     /* -------------------- PWM -------------------- */
-    TCCR1A |= (1 << COM1A1) |  // non-inverting PWM
-    (1 << WGM10) | (1 << WGM11);  // set 10-bit fast PWM mode
-
-    TCCR1B |= (1 << WGM12) |  // set 10-bit fast PWM mode
-    (1 << CS10);  // set prescaler == 1
+    init_timer1_PWM();
 
     /* -------------------- ADC -------------------- */
-    ADMUX |= (1 << REFS0) |  // set VCC as voltage reference
-    (1 << MUX0) | (1 << MUX1) |  // ADC on ADC3 (PORTC3) pin
-    (1 << ADLAR);  // adjust ADC result to left
+    init_ADC();
 
-    ADCSRA |= (1 << ADEN) |  // enable ADC
-    (1 << ADSC) |  // start ADC conversion
-    (1 << ADIE) |  // enable conversion complete interrupt
-    (1 << ADPS0) | (1 << ADPS1) | (1 << ADPS2);  // set prescaler == 1024
-
-    DIDR0 |= (1 << ADC3D);  // disable digital input buffer to reduce power consumption (PINC3 will be always 0)
-
-    sei();  // allow interrupts
-    
     while (true) {
+        poll_button(&left_button);
+        poll_button(&right_button);
+
+        if (left_button.passed_debounce_amount >= BTN_DEBOUNCE_AMOUNT_TO_PASS) {
+            adc_high_limit = limit(adc_high_limit - ADC_HIGH_LIMIT_STEP, 0, 1023);
+            left_button.passed_debounce_amount = 0;
+        }
+        if (right_button.passed_debounce_amount >= BTN_DEBOUNCE_AMOUNT_TO_PASS) {
+            adc_high_limit = limit(adc_high_limit + ADC_HIGH_LIMIT_STEP, 0, 1023);
+            right_button.passed_debounce_amount = 0;
+        }
+
         /*
             set current PWM value
-            use 8 high bits only due to the inaccuracy of 1-2 low bits
-            change range from 0-255 to 0-1020
+            use 8 high ADC bits only due to the inaccuracy of 1-2 low bits
+            change range
         */
-        OCR1A = ADCH << 2;
+        OCR1A = map(ADCH, 0, 255, 0, adc_high_limit);
     }
     
     return 0;

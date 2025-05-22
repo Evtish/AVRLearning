@@ -1,5 +1,5 @@
 #include "defines.h"
-#include "controls.h"
+#include "button_controls.h"
 #include "inits.h"
 
 #include <stdbool.h>
@@ -11,7 +11,7 @@ volatile uint16_t passed_debounce_amount = 0;
 #if defined TIMER0_CTC
     /* CTC interrupt (when counter == match value) */
     ISR(TIMER0_COMPA_vect) {
-        update(BUTTON_PIN, &passed_debounce_amount);
+        update_button(BUTTON_PIN, &passed_debounce_amount);
     }
 #elif defined PCINT23_EXTERNAL_INTR
     /* pin change interrupt (when PCINT pin state has changed) */
@@ -53,7 +53,7 @@ int main(void) {
         #if defined TIMER0_COUNTER
             /* if some time has passed since the last time */
             if (TICK_DELTA(TCNT0, last_call_time) >= TIMER_TICK_AMOUNT) {
-                update(BUTTON_PIN, &passed_debounce_amount);
+                update_button(BUTTON_PIN, &passed_debounce_amount);
                 last_call_time = TCNT0;
             }
         #endif
