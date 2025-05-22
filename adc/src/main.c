@@ -12,10 +12,6 @@ int main(void) {
     button left_button = {L_BUTTON_PIN, false, 0, 0};
     button right_button = {R_BUTTON_PIN, false, 0, 0};
 
-    // bool l_btn_was_pressed = false, r_btn_was_pressed = false;
-    // uint8_t l_btn_last_call_time = 0, r_btn_last_call_time = 0;
-    // uint16_t l_btn_debounce_amount = 0, r_btn_debounce_amount = 0;
-
     /* -------------------- GPIO -------------------- */
     init_LED_portb(LED_PIN);
     
