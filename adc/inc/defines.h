@@ -1,9 +1,12 @@
 #include <avr/io.h>
 
+/* modes */
+// #define CHANGE_LIMIT_MODE
+
 /* pins */
 #define LED_PIN PORTB1
-#define L_BUTTON_PIN PORTD6
-#define R_BUTTON_PIN PORTD7
+#define R_BUTTON_PIN PORTD2
+#define L_BUTTON_PIN PORTD3
 
 /* ADC */
 #define ADC_HIGH_LIMIT_STEP 204
